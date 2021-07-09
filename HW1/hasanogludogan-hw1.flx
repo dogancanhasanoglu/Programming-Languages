@@ -1,0 +1,144 @@
+%{
+#include <string.h>
+int noOfLines = 1;
+char lexeme[100];
+int i,j,templine;
+
+%}
+
+%%
+
+"\n" noOfLines++;
+
+
+"\"Get\""       printf("%d tGET\n",noOfLines);
+"\"Set\""       printf("%d tSET\n",noOfLines);
+"\"Function\""  printf("%d tFUNCTION\n",noOfLines);
+"\"Print\""     printf("%d tPRINT\n",noOfLines);
+"\"For\""       printf("%d tFOR\n",noOfLines);
+"\"If\""        printf("%d tIF\n",noOfLines);
+"\"Return\""    printf("%d tRETURN\n",noOfLines);
+
+","      printf("%d tCOMMA\n",noOfLines);
+"\"+\""  printf("%d tPLUS\n",noOfLines);
+"\"*\""  printf("%d tMUL\n",noOfLines);
+"\"++\"" printf("%d tINC\n",noOfLines);
+"["      printf("%d tLBRAC\n",noOfLines);
+"\">\""  printf("%d tGT\n",noOfLines);
+"\">=\"" printf("%d tGEQ\n",noOfLines);
+"\"==\"" printf("%d tEQUALITY\n",noOfLines);
+"\"-\""  printf("%d tMINUS\n",noOfLines);
+"\"/\""  printf("%d tDIV\n",noOfLines);
+"\"--\"" printf("%d tDEC\n",noOfLines);
+"]"      printf("%d tRBRAC\n",noOfLines);
+"\"<\""  printf("%d tLT\n",noOfLines);
+"\"<=\"" printf("%d tLEQ\n",noOfLines);
+" "    
+
+
+\"[0-9]+[_a-zA-Z]+\" {
+	for(i=0;i<sizeof(lexeme);i++) {lexeme[i] = '\0';}
+	i=1;
+	while(yytext[i]=='0'||yytext[i]=='1'||
+	yytext[i]=='2'||yytext[i]=='3'||
+	yytext[i]=='4'||yytext[i]=='5'||
+	yytext[i]=='6'||yytext[i]=='7'||
+	yytext[i]=='8'||yytext[i]=='9')
+	{
+		lexeme[i-1]=yytext[i];
+		i++;
+		
+	}
+	printf("%d tNUM (%s) (%s)\n",noOfLines,lexeme,lexeme);
+}
+
+
+[-]?[0-9]+  {
+
+
+            for(i=0;i<sizeof(lexeme);i++) {lexeme[i] = '\0';}
+            int beDeleted = 1;
+            for(i=0,j=0;i<yyleng;i++){
+                if((beDeleted == 0) || (yytext[i] !='0')){
+                    lexeme[j] = yytext[i];
+                    if(yytext[i] != '-' ){ beDeleted = 0;}
+                    else { beDeleted = 1;}
+                j++;}
+            }
+			printf("%d tNUM (%s) (%s) \n",noOfLines,yytext,lexeme);
+}
+
+
+
+[-]?[0-9]+"."[0-9]+    {
+
+
+            for(i=0;i<sizeof(lexeme);i++) {lexeme[i] = '\0';}	    
+            int beDeleted = 1;
+            for(i=0,j=0;i<yyleng;i++)
+			{
+                if((beDeleted == 0) || (yytext[i] !='0'))
+				{
+                    lexeme[j] = yytext[i];
+
+                    if (yytext[i] != '-' ){ beDeleted = 0;}
+                    else { beDeleted = 1;}
+                j++;
+                }
+                else if(yytext[i+1] == '.') {lexeme[j] = yytext[i]; j++;}
+            }
+			j=0;
+			for(i=yyleng-1;0<i;i--)
+			{
+				if(yytext[i]=='0') j++;
+				if(yytext[i]!='0')
+				{
+					if(yytext[i]=='.')j--;
+					break;
+				}
+				
+				
+			}
+			
+		char temp[100];
+	        for(i=0;i<sizeof(temp);i++) {temp[i] = '\0';}
+		int n= strlen(lexeme)-j;
+		for(i=0;i<n;i++){
+		temp[i]=lexeme[i];}
+	
+	
+        printf("%d tNUM (%s) (%s)\n",noOfLines,yytext,temp);
+
+
+}
+
+
+
+\"[_a-zA-Z][_0-9a-zA-Z]*\" {
+   yytext[strlen(yytext)-1]=0;
+   printf("%d tIDENT (%s)\n",noOfLines,yytext+1);
+}
+
+
+
+'[^']*'  {
+    j=noOfLines;
+    for(i=0;i<yyleng;i++){
+		if(yytext[i]=='\n')
+			noOfLines++;}
+    yytext[strlen(yytext)-1]=0;
+    printf("%d tSTRING (%s)\n",j,yytext+1);
+}
+
+
+.   printf("");
+
+%%
+
+main()
+{
+    yylex();
+    return 0;
+}
+
+
